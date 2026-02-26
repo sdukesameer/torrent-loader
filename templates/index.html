@@ -596,37 +596,40 @@
 
       function stateBadge(state, paused, prog) {
         if (paused) return '<span class="badge badge-paused">Paused</span>';
-        if (prog >= 100) return '<span class="badge badge-seeding">Seeding</span>';
         const s = (state || '').toLowerCase();
+        if (s === 'adding') return '<span class="badge badge-metadata">Adding…</span>';
+        if (prog >= 100) return '<span class="badge badge-seeding">Seeding ✓</span>';
         if (s.includes('check')) return '<span class="badge badge-checking">Checking</span>';
-        if (s.includes('metadata')) return '<span class="badge badge-metadata">Metadata</span>';
-        if (s.includes('downloading') || s.includes('0') || s.includes('1') || s.includes('3')) return '<span class="badge badge-downloading">Downloading</span>';
-        if (s.includes('seeding') || s.includes('5')) return '<span class="badge badge-seeding">Seeding</span>';
+        if (s.includes('metadata') || s.includes('downloading_metadata')) return '<span class="badge badge-metadata">Fetching Metadata</span>';
+        if (s === 'downloading' || s.includes('downloading')) return '<span class="badge badge-downloading">Downloading</span>';
+        if (s === 'seeding' || s.includes('seeding')) return '<span class="badge badge-seeding">Seeding ✓</span>';
+        if (s.includes('error')) return `<span class="badge badge-error">Error</span>`;
         return `<span class="badge badge-checking">${state}</span>`;
-      }
+      }</span > `;
+}
 
-      function renderTorrent(t) {
-        const prog = Math.min(t.progress || 0, 100);
-        const done = prog >= 100;
-        const tid = t.id;
+function renderTorrent(t) {
+  const prog = Math.min(t.progress || 0, 100);
+  const done = prog >= 100;
+  const tid = t.id;
 
-        const filesHtml = t.files && t.files.length > 0 ? `
-    <div class="files-toggle" onclick="toggleFiles('${tid}')">
-      <span>📁</span> ${t.files.length} file${t.files.length > 1 ? 's' : ''} — click to ${torrents[tid]?.filesOpen ? 'hide' : 'show'}
-    </div>
-    <div class="files-list ${torrents[tid]?.filesOpen ? 'open' : ''}" id="files-${tid}">
-      ${t.files.map(f => `
+  const filesHtml = t.files && t.files.length > 0 ? `
+        < div class="files-toggle" onclick = "toggleFiles('${tid}')" >
+          <span>📁</span> ${ t.files.length } file${ t.files.length > 1 ? 's' : '' } — click to ${ torrents[tid]?.filesOpen ? 'hide' : 'show' }
+    </div >
+        <div class="files-list ${torrents[tid]?.filesOpen ? 'open' : ''}" id="files-${tid}">
+          ${t.files.map(f => `
         <div class="file-entry">
           <span class="file-name">${f.path}</span>
           <span class="file-size">${fmt(f.size)}</span>
           ${done ? `<a href="/api/download/${tid}/${encodeURIComponent(f.path)}">↓ Download</a>` : ''}
         </div>
       `).join('')}
-    </div>
-  ` : '';
+        </div>
+      ` : '';
 
-        return `
-    <div class="torrent-item" id="item-${tid}">
+  return `
+        < div class="torrent-item" id = "item-${tid}" >
       <div class="torrent-header">
         <div>
           <div class="torrent-name">${escHtml(t.name || 'Fetching metadata…')}</div>
@@ -647,58 +650,58 @@
 
       <div class="torrent-meta">
         <div class="meta-item"><span>Progress</span><span class="val">${prog.toFixed(1)}%</span></div>
-        <div class="meta-item"><span>↓</span><span class="val">${fmtSpeed(t.download_rate || 0)}</span></div>
-        <div class="meta-item"><span>↑</span><span class="val">${fmtSpeed(t.upload_rate || 0)}</span></div>
-        <div class="meta-item"><span>Peers</span><span class="val">${t.num_peers || 0}</span></div>
+        <div class="meta-item"><span>↓</span><span class="val">${fmtSpeed(t.download_rate||0)}</span></div>
+        <div class="meta-item"><span>↑</span><span class="val">${fmtSpeed(t.upload_rate||0)}</span></div>
+        <div class="meta-item"><span>Peers</span><span class="val">${t.num_peers||0}</span></div>
         ${t.total_wanted > 0 ? `<div class="meta-item"><span>Size</span><span class="val">${fmt(t.total_wanted)}</span></div>` : ''}
       </div>
 
-      ${filesHtml}
-    </div>
-  `;
-      }
+      ${ filesHtml }
+    </div >
+        `;
+}
 
-      function escHtml(s) {
-        return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      }
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
 
-      function toggleFiles(tid) {
-        if (!torrents[tid]) torrents[tid] = {};
-        torrents[tid].filesOpen = !torrents[tid].filesOpen;
-        refresh();
-      }
+function toggleFiles(tid) {
+  if (!torrents[tid]) torrents[tid] = {};
+  torrents[tid].filesOpen = !torrents[tid].filesOpen;
+  refresh();
+}
 
-      async function addTorrent() {
-        const magnet = document.getElementById('magnetInput').value.trim();
-        if (!magnet) return showStatus('Please paste a magnet link.', 'error');
+async function addTorrent() {
+  const magnet = document.getElementById('magnetInput').value.trim();
+  if (!magnet) return showStatus('Please paste a magnet link.', 'error');
 
-        const btn = document.getElementById('addBtn');
-        btn.disabled = true; btn.textContent = 'Adding…';
+  const btn = document.getElementById('addBtn');
+  btn.disabled = true; btn.textContent = 'Adding…';
 
-        try {
-          const res = await fetch('/api/add', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ magnet })
-          });
-          const data = await res.json();
-          if (data.error) { showStatus(data.error, 'error'); }
-          else {
-            document.getElementById('magnetInput').value = '';
-            showStatus(`Added: ${data.name}`, 'success');
-            refresh();
-          }
-        } catch (e) {
-          showStatus('Request failed: ' + e.message, 'error');
-        } finally {
-          btn.disabled = false; btn.textContent = 'Add Torrent';
-        }
-      }
+  try {
+    const res = await fetch('/api/add', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({magnet})
+    });
+    const data = await res.json();
+    if (data.error) { showStatus(data.error, 'error'); }
+    else {
+      document.getElementById('magnetInput').value = '';
+      showStatus(`Added: ${ data.name } `, 'success');
+      refresh();
+    }
+  } catch (e) {
+    showStatus('Request failed: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Add Torrent';
+  }
+}
 
-      async function pauseTorrent(tid) {
-        await fetch(`/api/torrent/${tid}/pause`, { method: 'POST' });
-        refresh();
-      }
+async function pauseTorrent(tid) {
+  await fetch(`/ api / torrent / ${ tid }/pause`, {method:'POST'});
+      refresh();
+}
 
       async function resumeTorrent(tid) {
         await fetch(`/api/torrent/${tid}/resume`, { method: 'POST' });
@@ -755,12 +758,13 @@
 
       refresh();
 
-      // Smart polling: 4s when active downloads, 30s when idle/no torrents
+      // Smart polling: 3s when torrents exist, 20s when truly empty
       function scheduleRefresh() {
-        const hasActive = data.length > 0 && data.some(t => !t.paused && t.progress < 100);
-        const interval = hasActive ? 4000 : 30000;
+        const interval = data.length > 0 ? 3000 : 20000;
         setTimeout(async () => { await refresh(); scheduleRefresh(); }, interval);
       }
+      scheduleRefresh(); }, interval);
+}
       scheduleRefresh();
     </script>
   </body>
