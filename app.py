@@ -4,28 +4,30 @@ import time
 import urllib.parse
 import traceback
 from flask import Flask, render_template, request, jsonify, send_file, abort
-import libtorrent as lt
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "change-this-secret-key-in-production")
 
-DOWNLOAD_DIR = os.environ.get("DOWNLOAD_DIR", "./downloads")
+DOWNLOAD_DIR = os.environ.get("DOWNLOAD_DIR", "/tmp/downloads")
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
 torrents: dict = {}
 _session = None
 _session_lock = threading.Lock()
+_session_error = None
 
 
 def get_session():
-    global _session
+    global _session, _session_error
     with _session_lock:
-        if _session is None:
-            # libtorrent 2.x: apply_settings() takes a plain dict
+        if _session is not None:
+            return _session
+        try:
+            import libtorrent as lt
             _session = lt.session()
             _session.apply_settings({
                 "listen_interfaces": "0.0.0.0:6881",
-                "alert_mask": lt.alert.category_t.all_categories,
+                "alert_mask": 0,  # minimal alerts to reduce overhead
                 "dht_bootstrap_nodes": (
                     "router.bittorrent.com:6881,"
                     "router.utorrent.com:6881,"
@@ -35,15 +37,23 @@ def get_session():
             _session.start_dht()
             _session.start_lsd()
             _session.start_upnp()
-    return _session
+            _session_error = None
+        except Exception as e:
+            _session_error = traceback.format_exc()
+            _session = None
+        return _session
 
 
 def torrent_worker():
-    ses = get_session()
     while True:
-        ses.wait_for_alert(500)
-        ses.pop_alerts()
-        time.sleep(0.2)
+        try:
+            ses = get_session()
+            if ses:
+                ses.wait_for_alert(500)
+                ses.pop_alerts()
+        except Exception:
+            pass
+        time.sleep(0.5)
 
 
 threading.Thread(target=torrent_worker, daemon=True).start()
@@ -58,6 +68,7 @@ def handle_id(handle):
 
 def status_dict(tid, handle):
     try:
+        import libtorrent as lt
         s = handle.status()
         ti = handle.torrent_file()
         name = ti.name() if ti else torrents.get(tid, {}).get("name", "Fetching metadata…")
@@ -113,6 +124,7 @@ def index():
 
 @app.route("/api/add", methods=["POST"])
 def add_torrent():
+    import libtorrent as lt
     data = request.get_json(force=True)
     magnet = data.get("magnet", "").strip()
     if not magnet:
@@ -120,9 +132,11 @@ def add_torrent():
     if not magnet.startswith("magnet:"):
         return jsonify({"error": "Invalid magnet link — must start with magnet:"}), 400
 
-    try:
-        ses = get_session()
+    ses = get_session()
+    if ses is None:
+        return jsonify({"error": "Torrent engine failed to start", "trace": _session_error}), 500
 
+    try:
         params = lt.parse_magnet_uri(magnet)
         params.save_path = DOWNLOAD_DIR
         params.flags |= lt.torrent_flags.sequential_download
@@ -134,7 +148,6 @@ def add_torrent():
 
         qs = urllib.parse.parse_qs(urllib.parse.urlparse(magnet).query)
         dn = urllib.parse.unquote_plus(qs.get("dn", ["Unknown torrent"])[0])
-
         torrents[tid] = {"handle": handle, "name": dn}
         return jsonify({"id": tid, "name": dn})
 
@@ -190,16 +203,18 @@ def download_file(tid, filepath):
     return send_file(safe_path, as_attachment=True)
 
 
-# ── Debug endpoint — shows real errors ───────────────────────────────────────
 @app.route("/api/debug")
 def debug():
     try:
+        import libtorrent as lt
         ses = get_session()
         return jsonify({
             "lt_version": lt.version,
             "session_ok": ses is not None,
+            "session_error": _session_error,
             "download_dir": DOWNLOAD_DIR,
             "download_dir_exists": os.path.exists(DOWNLOAD_DIR),
+            "download_dir_writable": os.access(DOWNLOAD_DIR, os.W_OK),
             "torrent_count": len(torrents),
         })
     except Exception as e:
@@ -207,5 +222,5 @@ def debug():
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
+    port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port, debug=False)
