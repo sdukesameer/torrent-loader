@@ -1,4 +1,5 @@
 import os
+import queue
 import threading
 import time
 import urllib.parse
@@ -11,61 +12,65 @@ app.secret_key = os.environ.get("SECRET_KEY", "change-this-secret-key-in-product
 DOWNLOAD_DIR = os.environ.get("DOWNLOAD_DIR", "/tmp/downloads")
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
-torrents: dict = {}
+# ── State ─────────────────────────────────────────────────────────────────────
+torrents: dict = {}          # tid -> { handle, name }
 _session = None
-_session_lock = threading.Lock()
-_session_error = None
+_add_queue = queue.Queue()   # (magnet, save_path, result_queue)
+_init_error = None
 
 
-def get_session():
-    global _session, _session_error
-    with _session_lock:
-        if _session is not None:
-            return _session
-        try:
-            import libtorrent as lt
-            _session = lt.session()
-            _session.apply_settings({
-                "listen_interfaces": "0.0.0.0:6881",
-                "alert_mask": 0,  # minimal alerts to reduce overhead
-                "dht_bootstrap_nodes": (
-                    "router.bittorrent.com:6881,"
-                    "router.utorrent.com:6881,"
-                    "dht.transmissionbt.com:6881"
-                ),
-            })
-            _session.start_dht()
-            _session.start_lsd()
-            _session.start_upnp()
-            _session_error = None
-        except Exception as e:
-            _session_error = traceback.format_exc()
-            _session = None
-        return _session
-
-
-def torrent_worker():
-    while True:
-        try:
-            ses = get_session()
-            if ses:
-                ses.wait_for_alert(500)
-                ses.pop_alerts()
-        except Exception:
-            pass
-        time.sleep(0.5)
-
-
-threading.Thread(target=torrent_worker, daemon=True).start()
-
-
-def handle_id(handle):
+# ── Single libtorrent thread ──────────────────────────────────────────────────
+def lt_thread():
+    """All libtorrent calls happen here — never on gunicorn worker threads."""
+    global _session, _init_error
     try:
-        return str(handle.info_hash())
+        import libtorrent as lt
+        _session = lt.session()
+        _session.apply_settings({
+            "listen_interfaces": "0.0.0.0:6881",
+            "alert_mask": 0,
+            "dht_bootstrap_nodes": (
+                "router.bittorrent.com:6881,"
+                "router.utorrent.com:6881,"
+                "dht.transmissionbt.com:6881"
+            ),
+        })
+        _session.start_dht()
+        _session.start_lsd()
+        _session.start_upnp()
     except Exception:
-        return None
+        _init_error = traceback.format_exc()
+        return
+
+    import libtorrent as lt
+    while True:
+        # Drain alerts
+        _session.wait_for_alert(100)
+        _session.pop_alerts()
+
+        # Process any pending add requests (non-blocking)
+        try:
+            while True:
+                magnet, save_path, result_q = _add_queue.get_nowait()
+                try:
+                    params = lt.parse_magnet_uri(magnet)
+                    params.save_path = save_path
+                    params.flags |= lt.torrent_flags.sequential_download
+                    handle = _session.add_torrent(params)
+                    tid = str(handle.info_hash())
+                    result_q.put({"ok": True, "tid": tid, "handle": handle})
+                except Exception as e:
+                    result_q.put({"ok": False, "error": str(e), "trace": traceback.format_exc()})
+        except queue.Empty:
+            pass
+
+        time.sleep(0.1)
 
 
+threading.Thread(target=lt_thread, daemon=True, name="lt-thread").start()
+
+
+# ── Helpers ───────────────────────────────────────────────────────────────────
 def status_dict(tid, handle):
     try:
         import libtorrent as lt
@@ -117,6 +122,7 @@ def status_dict(tid, handle):
         }
 
 
+# ── Routes ────────────────────────────────────────────────────────────────────
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -124,35 +130,34 @@ def index():
 
 @app.route("/api/add", methods=["POST"])
 def add_torrent():
-    import libtorrent as lt
     data = request.get_json(force=True)
     magnet = data.get("magnet", "").strip()
+
     if not magnet:
         return jsonify({"error": "No magnet link provided"}), 400
     if not magnet.startswith("magnet:"):
         return jsonify({"error": "Invalid magnet link — must start with magnet:"}), 400
+    if _session is None:
+        return jsonify({"error": "Torrent engine not ready yet", "trace": _init_error}), 503
 
-    ses = get_session()
-    if ses is None:
-        return jsonify({"error": "Torrent engine failed to start", "trace": _session_error}), 500
-
+    # Send work to the lt thread and wait up to 10s for result
+    result_q = queue.Queue()
+    _add_queue.put((magnet, DOWNLOAD_DIR, result_q))
     try:
-        params = lt.parse_magnet_uri(magnet)
-        params.save_path = DOWNLOAD_DIR
-        params.flags |= lt.torrent_flags.sequential_download
+        result = result_q.get(timeout=10)
+    except queue.Empty:
+        return jsonify({"error": "Timed out adding torrent — engine may be busy"}), 504
 
-        handle = ses.add_torrent(params)
-        tid = handle_id(handle)
-        if not tid:
-            return jsonify({"error": "Could not extract info hash"}), 400
+    if not result["ok"]:
+        return jsonify({"error": result["error"], "trace": result.get("trace")}), 500
 
-        qs = urllib.parse.parse_qs(urllib.parse.urlparse(magnet).query)
-        dn = urllib.parse.unquote_plus(qs.get("dn", ["Unknown torrent"])[0])
-        torrents[tid] = {"handle": handle, "name": dn}
-        return jsonify({"id": tid, "name": dn})
+    tid = result["tid"]
+    handle = result["handle"]
 
-    except Exception as e:
-        return jsonify({"error": str(e), "trace": traceback.format_exc()}), 500
+    qs = urllib.parse.parse_qs(urllib.parse.urlparse(magnet).query)
+    dn = urllib.parse.unquote_plus(qs.get("dn", ["Unknown torrent"])[0])
+    torrents[tid] = {"handle": handle, "name": dn}
+    return jsonify({"id": tid, "name": dn})
 
 
 @app.route("/api/torrents")
@@ -188,7 +193,8 @@ def remove_torrent(tid):
     meta = torrents.pop(tid, None)
     if not meta:
         return jsonify({"error": "Not found"}), 404
-    get_session().remove_torrent(meta["handle"])
+    if _session:
+        _session.remove_torrent(meta["handle"])
     return jsonify({"ok": True})
 
 
@@ -207,13 +213,11 @@ def download_file(tid, filepath):
 def debug():
     try:
         import libtorrent as lt
-        ses = get_session()
         return jsonify({
             "lt_version": lt.version,
-            "session_ok": ses is not None,
-            "session_error": _session_error,
+            "session_ok": _session is not None,
+            "session_error": _init_error,
             "download_dir": DOWNLOAD_DIR,
-            "download_dir_exists": os.path.exists(DOWNLOAD_DIR),
             "download_dir_writable": os.access(DOWNLOAD_DIR, os.W_OK),
             "torrent_count": len(torrents),
         })
