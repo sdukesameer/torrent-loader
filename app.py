@@ -1,8 +1,7 @@
 import os
 import threading
 import time
-import json
-import hashlib
+import urllib.parse
 from flask import Flask, render_template, request, jsonify, send_file, abort
 import libtorrent as lt
 
@@ -13,32 +12,37 @@ app.secret_key = os.environ.get("SECRET_KEY", "change-this-secret-key-in-product
 DOWNLOAD_DIR = os.environ.get("DOWNLOAD_DIR", "./downloads")
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
-# In-memory store: { handle_id: { meta... } }
 torrents: dict = {}
-session: lt.session = None
+_session = None
+_session_lock = threading.Lock()
 
 
 # ── libtorrent session ────────────────────────────────────────────────────────
 def get_session():
-    global session
-    if session is None:
-        settings = {
-            "listen_interfaces": "0.0.0.0:6881",
-            "alert_mask": lt.alert.category_t.all_categories,
-        }
-        session = lt.session(settings)
-    return session
+    global _session
+    with _session_lock:
+        if _session is None:
+            sp = lt.settings_pack()
+            sp["listen_interfaces"] = "0.0.0.0:6881"
+            sp["alert_mask"] = lt.alert.category_t.all_categories
+            sp["dht_bootstrap_nodes"] = (
+                "router.bittorrent.com:6881,"
+                "router.utorrent.com:6881,"
+                "dht.transmissionbt.com:6881"
+            )
+            _session = lt.session(sp)
+            _session.start_dht()
+            _session.start_lsd()
+            _session.start_upnp()
+    return _session
 
 
 def torrent_worker():
-    """Background thread that pumps libtorrent alerts."""
     ses = get_session()
     while True:
-        ses.wait_for_alert(1000)
-        alerts = ses.pop_alerts()
-        for alert in alerts:
-            pass  # libtorrent handles state internally
-        time.sleep(0.5)
+        ses.wait_for_alert(500)
+        ses.pop_alerts()
+        time.sleep(0.2)
 
 
 worker_thread = threading.Thread(target=torrent_worker, daemon=True)
@@ -47,10 +51,8 @@ worker_thread.start()
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 def handle_id(handle):
-    """Stable string key for a torrent handle."""
     try:
-        info_hash = str(handle.info_hash())
-        return info_hash
+        return str(handle.info_hash())
     except Exception:
         return None
 
@@ -59,14 +61,28 @@ def status_dict(tid, handle):
     try:
         s = handle.status()
         ti = handle.torrent_file()
-        name = ti.name() if ti else (torrents.get(tid, {}).get("name", "Fetching metadata…"))
+        name = ti.name() if ti else torrents.get(tid, {}).get("name", "Fetching metadata…")
+
         files = []
         if ti:
             fs = ti.files()
             for i in range(fs.num_files()):
-                fp = fs.file_path(i)
-                sz = fs.file_size(i)
-                files.append({"path": fp, "size": sz})
+                files.append({"path": fs.file_path(i), "size": fs.file_size(i)})
+
+        try:
+            state_str = s.state.name
+        except AttributeError:
+            state_str = str(s.state).split(".")[-1]
+
+        try:
+            paused = bool(s.flags & lt.torrent_flags.paused)
+        except Exception:
+            paused = getattr(s, "paused", False)
+
+        try:
+            error = s.errc.message() if s.errc.value() else None
+        except Exception:
+            error = getattr(s, "error", None) or None
 
         return {
             "id": tid,
@@ -75,15 +91,20 @@ def status_dict(tid, handle):
             "download_rate": s.download_rate,
             "upload_rate": s.upload_rate,
             "num_peers": s.num_peers,
-            "state": str(s.state),
+            "state": state_str,
             "total_done": s.total_done,
             "total_wanted": s.total_wanted,
-            "paused": s.paused,
-            "error": s.error if s.error else None,
+            "paused": paused,
+            "error": error,
             "files": files,
         }
     except Exception as e:
-        return {"id": tid, "name": torrents.get(tid, {}).get("name", "Unknown"), "error": str(e)}
+        return {
+            "id": tid,
+            "name": torrents.get(tid, {}).get("name", "Unknown"),
+            "error": str(e),
+            "progress": 0,
+        }
 
 
 # ── Routes ────────────────────────────────────────────────────────────────────
@@ -98,25 +119,28 @@ def add_torrent():
     magnet = data.get("magnet", "").strip()
     if not magnet:
         return jsonify({"error": "No magnet link provided"}), 400
+    if not magnet.startswith("magnet:"):
+        return jsonify({"error": "Invalid magnet link — must start with magnet:"}), 400
 
-    ses = get_session()
-    params = lt.parse_magnet_uri(magnet)
-    params.save_path = DOWNLOAD_DIR
+    try:
+        ses = get_session()
+        params = lt.parse_magnet_uri(magnet)
+        params.save_path = DOWNLOAD_DIR
+        params.flags |= lt.torrent_flags.sequential_download
 
-    handle = ses.add_torrent(params)
-    handle.set_flags(lt.torrent_flags.sequential_download)
+        handle = ses.add_torrent(params)
+        tid = handle_id(handle)
+        if not tid:
+            return jsonify({"error": "Could not extract info hash"}), 400
 
-    tid = handle_id(handle)
-    if tid is None:
-        return jsonify({"error": "Could not parse magnet link"}), 400
+        qs = urllib.parse.parse_qs(urllib.parse.urlparse(magnet).query)
+        dn = urllib.parse.unquote_plus(qs.get("dn", ["Unknown torrent"])[0])
 
-    # Extract display name from magnet dn= param
-    import urllib.parse
-    qs = urllib.parse.parse_qs(urllib.parse.urlparse(magnet).query)
-    dn = qs.get("dn", ["Unknown"])[0]
+        torrents[tid] = {"handle": handle, "name": dn}
+        return jsonify({"id": tid, "name": dn})
 
-    torrents[tid] = {"handle": handle, "name": dn}
-    return jsonify({"id": tid, "name": dn})
+    except Exception as e:
+        return jsonify({"error": f"Failed to add torrent: {str(e)}"}), 500
 
 
 @app.route("/api/torrents")
@@ -127,14 +151,6 @@ def list_torrents():
         if h.is_valid():
             result.append(status_dict(tid, h))
     return jsonify(result)
-
-
-@app.route("/api/torrent/<tid>")
-def torrent_status(tid):
-    meta = torrents.get(tid)
-    if not meta:
-        return jsonify({"error": "Not found"}), 404
-    return jsonify(status_dict(tid, meta["handle"]))
 
 
 @app.route("/api/torrent/<tid>/pause", methods=["POST"])
@@ -160,14 +176,12 @@ def remove_torrent(tid):
     meta = torrents.pop(tid, None)
     if not meta:
         return jsonify({"error": "Not found"}), 404
-    ses = get_session()
-    ses.remove_torrent(meta["handle"])
+    get_session().remove_torrent(meta["handle"])
     return jsonify({"ok": True})
 
 
 @app.route("/api/download/<tid>/<path:filepath>")
 def download_file(tid, filepath):
-    """Serve a completed file for download."""
     safe_path = os.path.realpath(os.path.join(DOWNLOAD_DIR, filepath))
     base = os.path.realpath(DOWNLOAD_DIR)
     if not safe_path.startswith(base):

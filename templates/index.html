@@ -1,490 +1,618 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Torrent Downloader</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg: #0a0a0f;
-    --surface: #12121a;
-    --surface2: #1a1a26;
-    --border: #2a2a3d;
-    --accent: #00e5ff;
-    --accent2: #7c3aed;
-    --green: #00ff87;
-    --red: #ff4060;
-    --yellow: #ffd700;
-    --text: #e8e8f0;
-    --muted: #6b6b8a;
-    --font-mono: 'Space Mono', monospace;
-    --font-display: 'Syne', sans-serif;
-  }
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Torrent Downloader</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap"
+      rel="stylesheet">
+    <style>
+      :root {
+        --bg: #0a0a0f;
+        --surface: #12121a;
+        --surface2: #1a1a26;
+        --border: #2a2a3d;
+        --accent: #00e5ff;
+        --accent2: #7c3aed;
+        --green: #00ff87;
+        --red: #ff4060;
+        --yellow: #ffd700;
+        --text: #e8e8f0;
+        --muted: #6b6b8a;
+        --font-mono: 'Space Mono', monospace;
+        --font-display: 'Syne', sans-serif;
+      }
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--font-mono);
-    min-height: 100vh;
-    padding: 0;
-    overflow-x: hidden;
-  }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
 
-  /* Grid background */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
-    z-index: 0;
-  }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font-mono);
+        min-height: 100vh;
+        padding: 0;
+        overflow-x: hidden;
+      }
 
-  .container {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 40px 24px;
-    position: relative;
-    z-index: 1;
-  }
+      /* Grid background */
+      body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(0, 229, 255, 0.03) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(0, 229, 255, 0.03) 1px, transparent 1px);
+        background-size: 40px 40px;
+        pointer-events: none;
+        z-index: 0;
+      }
 
-  /* Header */
-  header {
-    margin-bottom: 48px;
-  }
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 40px 24px;
+        position: relative;
+        z-index: 1;
+      }
 
-  .logo-row {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 8px;
-  }
+      /* Header */
+      header {
+        margin-bottom: 48px;
+      }
 
-  .logo-icon {
-    width: 44px;
-    height: 44px;
-    background: linear-gradient(135deg, var(--accent2), var(--accent));
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 22px;
-    flex-shrink: 0;
-    box-shadow: 0 0 24px rgba(0,229,255,0.3);
-  }
+      .logo-row {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 8px;
+      }
 
-  h1 {
-    font-family: var(--font-display);
-    font-size: clamp(1.6rem, 4vw, 2.4rem);
-    font-weight: 800;
-    letter-spacing: -0.5px;
-    background: linear-gradient(135deg, #fff 40%, var(--accent));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
+      .logo-icon {
+        width: 44px;
+        height: 44px;
+        background: linear-gradient(135deg, var(--accent2), var(--accent));
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        flex-shrink: 0;
+        box-shadow: 0 0 24px rgba(0, 229, 255, 0.3);
+      }
 
-  .subtitle {
-    color: var(--muted);
-    font-size: 0.78rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
+      h1 {
+        font-family: var(--font-display);
+        font-size: clamp(1.6rem, 4vw, 2.4rem);
+        font-weight: 800;
+        letter-spacing: -0.5px;
+        background: linear-gradient(135deg, #fff 40%, var(--accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
 
-  /* Card */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 28px;
-    margin-bottom: 24px;
-    position: relative;
-    overflow: hidden;
-  }
+      .subtitle {
+        color: var(--muted);
+        font-size: 0.78rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
 
-  .card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--accent), transparent);
-    opacity: 0.5;
-  }
+      /* Card */
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 28px;
+        margin-bottom: 24px;
+        position: relative;
+        overflow: hidden;
+      }
 
-  .card-title {
-    font-family: var(--font-display);
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--accent);
-    margin-bottom: 18px;
-  }
+      .card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--accent), transparent);
+        opacity: 0.5;
+      }
 
-  /* Input area */
-  .input-group {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
+      .card-title {
+        font-family: var(--font-display);
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin-bottom: 18px;
+      }
 
-  textarea {
-    flex: 1;
-    min-width: 200px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text);
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
-    padding: 14px 16px;
-    resize: vertical;
-    min-height: 80px;
-    transition: border-color 0.2s;
-    outline: none;
-  }
+      /* Input area */
+      .input-group {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
 
-  textarea::placeholder { color: var(--muted); }
-  textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(0,229,255,0.1); }
+      textarea {
+        flex: 1;
+        min-width: 200px;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--text);
+        font-family: var(--font-mono);
+        font-size: 0.78rem;
+        padding: 14px 16px;
+        resize: vertical;
+        min-height: 80px;
+        transition: border-color 0.2s;
+        outline: none;
+      }
 
-  .btn {
-    background: linear-gradient(135deg, var(--accent2), #4f46e5);
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    padding: 14px 24px;
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 0.85rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
-    align-self: flex-end;
-    letter-spacing: 0.03em;
-  }
+      textarea::placeholder {
+        color: var(--muted);
+      }
 
-  .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(124,58,237,0.5); }
-  .btn:active { transform: translateY(0); }
-  .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+      textarea:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 2px rgba(0, 229, 255, 0.1);
+      }
 
-  .btn-sm {
-    padding: 6px 12px;
-    font-size: 0.7rem;
-    border-radius: 6px;
-  }
+      .btn {
+        background: linear-gradient(135deg, var(--accent2), #4f46e5);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 14px 24px;
+        font-family: var(--font-display);
+        font-weight: 700;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        white-space: nowrap;
+        align-self: flex-end;
+        letter-spacing: 0.03em;
+      }
 
-  .btn-danger {
-    background: linear-gradient(135deg, #7f1d1d, var(--red));
-  }
+      .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.5);
+      }
 
-  .btn-ghost {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--muted);
-  }
+      .btn:active {
+        transform: translateY(0);
+      }
 
-  .btn-ghost:hover {
-    background: var(--surface2);
-    color: var(--text);
-    box-shadow: none;
-  }
+      .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+      }
 
-  /* Status message */
-  #statusMsg {
-    font-size: 0.78rem;
-    padding: 10px 14px;
-    border-radius: 6px;
-    margin-top: 14px;
-    display: none;
-  }
+      .btn-sm {
+        padding: 6px 12px;
+        font-size: 0.7rem;
+        border-radius: 6px;
+      }
 
-  #statusMsg.success { background: rgba(0,255,135,0.1); border: 1px solid rgba(0,255,135,0.3); color: var(--green); display: block; }
-  #statusMsg.error   { background: rgba(255,64,96,0.1);  border: 1px solid rgba(255,64,96,0.3);  color: var(--red);   display: block; }
+      .btn-danger {
+        background: linear-gradient(135deg, #7f1d1d, var(--red));
+      }
 
-  /* Torrent list */
-  .torrent-item {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 18px 20px;
-    margin-bottom: 14px;
-    transition: border-color 0.2s;
-    animation: slideIn 0.3s ease;
-  }
+      .btn-ghost {
+        background: transparent;
+        border: 1px solid var(--border);
+        color: var(--muted);
+      }
 
-  @keyframes slideIn {
-    from { opacity: 0; transform: translateY(-8px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
+      .btn-ghost:hover {
+        background: var(--surface2);
+        color: var(--text);
+        box-shadow: none;
+      }
 
-  .torrent-item:hover { border-color: rgba(0,229,255,0.3); }
+      /* Status message */
+      #statusMsg {
+        font-size: 0.78rem;
+        padding: 10px 14px;
+        border-radius: 6px;
+        margin-top: 14px;
+        display: none;
+      }
 
-  .torrent-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 12px;
-    margin-bottom: 12px;
-    flex-wrap: wrap;
-  }
+      #statusMsg.success {
+        background: rgba(0, 255, 135, 0.1);
+        border: 1px solid rgba(0, 255, 135, 0.3);
+        color: var(--green);
+        display: block;
+      }
 
-  .torrent-name {
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 0.92rem;
-    color: var(--text);
-    word-break: break-word;
-    flex: 1;
-  }
+      #statusMsg.error {
+        background: rgba(255, 64, 96, 0.1);
+        border: 1px solid rgba(255, 64, 96, 0.3);
+        color: var(--red);
+        display: block;
+      }
 
-  .torrent-actions {
-    display: flex;
-    gap: 8px;
-    flex-shrink: 0;
-  }
+      /* Torrent list */
+      .torrent-item {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 18px 20px;
+        margin-bottom: 14px;
+        transition: border-color 0.2s;
+        animation: slideIn 0.3s ease;
+      }
 
-  /* Progress bar */
-  .progress-wrap {
-    background: var(--surface);
-    border-radius: 4px;
-    height: 6px;
-    overflow: hidden;
-    margin-bottom: 10px;
-  }
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateY(-8px);
+        }
 
-  .progress-bar {
-    height: 100%;
-    border-radius: 4px;
-    background: linear-gradient(90deg, var(--accent2), var(--accent));
-    transition: width 1s linear;
-    position: relative;
-  }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
 
-  .progress-bar.done {
-    background: linear-gradient(90deg, #00b359, var(--green));
-  }
+      .torrent-item:hover {
+        border-color: rgba(0, 229, 255, 0.3);
+      }
 
-  .progress-bar::after {
-    content: '';
-    position: absolute;
-    right: 0; top: 0; bottom: 0;
-    width: 20px;
-    background: rgba(255,255,255,0.3);
-    filter: blur(4px);
-  }
+      .torrent-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+      }
 
-  /* Meta row */
-  .torrent-meta {
-    display: flex;
-    gap: 20px;
-    flex-wrap: wrap;
-    font-size: 0.72rem;
-    color: var(--muted);
-  }
+      .torrent-name {
+        font-family: var(--font-display);
+        font-weight: 700;
+        font-size: 0.92rem;
+        color: var(--text);
+        word-break: break-word;
+        flex: 1;
+      }
 
-  .meta-item {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-  }
+      .torrent-actions {
+        display: flex;
+        gap: 8px;
+        flex-shrink: 0;
+      }
 
-  .meta-item span:first-child { color: var(--muted); }
-  .meta-item .val { color: var(--text); font-weight: 700; }
+      /* Progress bar */
+      .progress-wrap {
+        background: var(--surface);
+        border-radius: 4px;
+        height: 6px;
+        overflow: hidden;
+        margin-bottom: 10px;
+      }
 
-  /* State badge */
-  .badge {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 20px;
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-  }
+      .progress-bar {
+        height: 100%;
+        border-radius: 4px;
+        background: linear-gradient(90deg, var(--accent2), var(--accent));
+        transition: width 1s linear;
+        position: relative;
+      }
 
-  .badge-downloading { background: rgba(0,229,255,0.12); color: var(--accent); border: 1px solid rgba(0,229,255,0.3); }
-  .badge-seeding     { background: rgba(0,255,135,0.12); color: var(--green); border: 1px solid rgba(0,255,135,0.3); }
-  .badge-paused      { background: rgba(255,215,0,0.12); color: var(--yellow); border: 1px solid rgba(255,215,0,0.3); }
-  .badge-checking, .badge-metadata { background: rgba(124,58,237,0.12); color: #a78bfa; border: 1px solid rgba(124,58,237,0.3); }
-  .badge-error       { background: rgba(255,64,96,0.12); color: var(--red); border: 1px solid rgba(255,64,96,0.3); }
+      .progress-bar.done {
+        background: linear-gradient(90deg, #00b359, var(--green));
+      }
 
-  /* Files section */
-  .files-toggle {
-    font-size: 0.7rem;
-    color: var(--muted);
-    cursor: pointer;
-    margin-top: 10px;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    transition: color 0.2s;
-  }
+      .progress-bar::after {
+        content: '';
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: 20px;
+        background: rgba(255, 255, 255, 0.3);
+        filter: blur(4px);
+      }
 
-  .files-toggle:hover { color: var(--accent); }
+      /* Meta row */
+      .torrent-meta {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        font-size: 0.72rem;
+        color: var(--muted);
+      }
 
-  .files-list {
-    margin-top: 10px;
-    display: none;
-    flex-direction: column;
-    gap: 6px;
-  }
+      .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
 
-  .files-list.open { display: flex; }
+      .meta-item span:first-child {
+        color: var(--muted);
+      }
 
-  .file-entry {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: var(--surface);
-    border-radius: 6px;
-    padding: 8px 12px;
-    font-size: 0.72rem;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
+      .meta-item .val {
+        color: var(--text);
+        font-weight: 700;
+      }
 
-  .file-entry a {
-    color: var(--accent);
-    text-decoration: none;
-    font-size: 0.68rem;
-    border: 1px solid rgba(0,229,255,0.3);
-    padding: 3px 8px;
-    border-radius: 4px;
-    transition: all 0.2s;
-  }
+      /* State badge */
+      .badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 20px;
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
 
-  .file-entry a:hover { background: rgba(0,229,255,0.1); }
+      .badge-downloading {
+        background: rgba(0, 229, 255, 0.12);
+        color: var(--accent);
+        border: 1px solid rgba(0, 229, 255, 0.3);
+      }
 
-  .file-name { color: var(--text); word-break: break-all; flex: 1; }
-  .file-size { color: var(--muted); flex-shrink: 0; }
+      .badge-seeding {
+        background: rgba(0, 255, 135, 0.12);
+        color: var(--green);
+        border: 1px solid rgba(0, 255, 135, 0.3);
+      }
 
-  /* Empty state */
-  .empty-state {
-    text-align: center;
-    padding: 48px 24px;
-    color: var(--muted);
-  }
+      .badge-paused {
+        background: rgba(255, 215, 0, 0.12);
+        color: var(--yellow);
+        border: 1px solid rgba(255, 215, 0, 0.3);
+      }
 
-  .empty-state .icon { font-size: 3rem; margin-bottom: 14px; opacity: 0.4; }
-  .empty-state p { font-size: 0.82rem; }
+      .badge-checking,
+      .badge-metadata {
+        background: rgba(124, 58, 237, 0.12);
+        color: #a78bfa;
+        border: 1px solid rgba(124, 58, 237, 0.3);
+      }
 
-  /* Stats bar */
-  .stats-bar {
-    display: flex;
-    gap: 24px;
-    padding: 16px 0;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-  }
+      .badge-error {
+        background: rgba(255, 64, 96, 0.12);
+        color: var(--red);
+        border: 1px solid rgba(255, 64, 96, 0.3);
+      }
 
-  .stat { font-size: 0.72rem; }
-  .stat-label { color: var(--muted); }
-  .stat-val { color: var(--accent); font-weight: 700; }
+      /* Files section */
+      .files-toggle {
+        font-size: 0.7rem;
+        color: var(--muted);
+        cursor: pointer;
+        margin-top: 10px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: color 0.2s;
+      }
 
-  /* Footer */
-  footer {
-    text-align: center;
-    color: var(--muted);
-    font-size: 0.68rem;
-    margin-top: 48px;
-    letter-spacing: 0.08em;
-  }
+      .files-toggle:hover {
+        color: var(--accent);
+      }
 
-  footer a { color: var(--accent); text-decoration: none; }
+      .files-list {
+        margin-top: 10px;
+        display: none;
+        flex-direction: column;
+        gap: 6px;
+      }
 
-  /* Scrollbar */
-  ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: var(--surface); }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-</style>
-</head>
-<body>
-<div class="container">
-  <header>
-    <div class="logo-row">
-      <div class="logo-icon">⬇</div>
-      <div>
-        <h1>Torrent Loader</h1>
-        <div class="subtitle">Personal Web Torrent Client</div>
+      .files-list.open {
+        display: flex;
+      }
+
+      .file-entry {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: var(--surface);
+        border-radius: 6px;
+        padding: 8px 12px;
+        font-size: 0.72rem;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .file-entry a {
+        color: var(--accent);
+        text-decoration: none;
+        font-size: 0.68rem;
+        border: 1px solid rgba(0, 229, 255, 0.3);
+        padding: 3px 8px;
+        border-radius: 4px;
+        transition: all 0.2s;
+      }
+
+      .file-entry a:hover {
+        background: rgba(0, 229, 255, 0.1);
+      }
+
+      .file-name {
+        color: var(--text);
+        word-break: break-all;
+        flex: 1;
+      }
+
+      .file-size {
+        color: var(--muted);
+        flex-shrink: 0;
+      }
+
+      /* Empty state */
+      .empty-state {
+        text-align: center;
+        padding: 48px 24px;
+        color: var(--muted);
+      }
+
+      .empty-state .icon {
+        font-size: 3rem;
+        margin-bottom: 14px;
+        opacity: 0.4;
+      }
+
+      .empty-state p {
+        font-size: 0.82rem;
+      }
+
+      /* Stats bar */
+      .stats-bar {
+        display: flex;
+        gap: 24px;
+        padding: 16px 0;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+      }
+
+      .stat {
+        font-size: 0.72rem;
+      }
+
+      .stat-label {
+        color: var(--muted);
+      }
+
+      .stat-val {
+        color: var(--accent);
+        font-weight: 700;
+      }
+
+      /* Footer */
+      footer {
+        text-align: center;
+        color: var(--muted);
+        font-size: 0.68rem;
+        margin-top: 48px;
+        letter-spacing: 0.08em;
+      }
+
+      footer a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+
+      /* Scrollbar */
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: var(--surface);
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 3px;
+      }
+
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <header>
+        <div class="logo-row">
+          <div class="logo-icon">⬇</div>
+          <div>
+            <h1>Torrent Loader</h1>
+            <div class="subtitle">Personal Web Torrent Client</div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Add torrent card -->
+      <div class="card">
+        <div class="card-title">▸ Add Magnet Link</div>
+        <div class="input-group">
+          <textarea id="magnetInput" placeholder="Paste magnet link here… magnet:?xt=urn:btih:…"></textarea>
+          <button class="btn" id="addBtn" onclick="addTorrent()">Add Torrent</button>
+        </div>
+        <div id="statusMsg"></div>
       </div>
-    </div>
-  </header>
 
-  <!-- Add torrent card -->
-  <div class="card">
-    <div class="card-title">▸ Add Magnet Link</div>
-    <div class="input-group">
-      <textarea id="magnetInput" placeholder="Paste magnet link here… magnet:?xt=urn:btih:…"></textarea>
-      <button class="btn" id="addBtn" onclick="addTorrent()">Add Torrent</button>
-    </div>
-    <div id="statusMsg"></div>
-  </div>
+      <!-- Torrents card -->
+      <div class="card">
+        <div class="card-title">▸ Active Downloads</div>
 
-  <!-- Torrents card -->
-  <div class="card">
-    <div class="card-title">▸ Active Downloads</div>
+        <div class="stats-bar" id="statsBar" style="display:none">
+          <div class="stat"><span class="stat-label">Total ↓ </span><span class="stat-val" id="totalDown">0 B/s</span>
+          </div>
+          <div class="stat"><span class="stat-label">Total ↑ </span><span class="stat-val" id="totalUp">0 B/s</span>
+          </div>
+          <div class="stat"><span class="stat-label">Torrents </span><span class="stat-val" id="totalCount">0</span>
+          </div>
+        </div>
 
-    <div class="stats-bar" id="statsBar" style="display:none">
-      <div class="stat"><span class="stat-label">Total ↓ </span><span class="stat-val" id="totalDown">0 B/s</span></div>
-      <div class="stat"><span class="stat-label">Total ↑ </span><span class="stat-val" id="totalUp">0 B/s</span></div>
-      <div class="stat"><span class="stat-label">Torrents </span><span class="stat-val" id="totalCount">0</span></div>
-    </div>
-
-    <div id="torrentList">
-      <div class="empty-state">
-        <div class="icon">📡</div>
-        <p>No active torrents. Paste a magnet link above to get started.</p>
+        <div id="torrentList">
+          <div class="empty-state">
+            <div class="icon">📡</div>
+            <p>No active torrents. Paste a magnet link above to get started.</p>
+          </div>
+        </div>
       </div>
+
+      <footer>
+        Torrent Loader · Personal Use Only ·
+        <a href="https://github.com/arvidn/libtorrent" target="_blank">Powered by libtorrent</a>
+      </footer>
     </div>
-  </div>
 
-  <footer>
-    Torrent Loader · Personal Use Only ·
-    <a href="https://github.com/arvidn/libtorrent" target="_blank">Powered by libtorrent</a>
-  </footer>
-</div>
+    <script>
+      const torrents = {};
 
-<script>
-const torrents = {};
+      function fmt(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 ** 2) return (bytes / 1024).toFixed(1) + ' KB';
+        if (bytes < 1024 ** 3) return (bytes / 1024 ** 2).toFixed(1) + ' MB';
+        return (bytes / 1024 ** 3).toFixed(2) + ' GB';
+      }
 
-function fmt(bytes) {
-  if (bytes < 1024) return bytes + ' B';
-  if (bytes < 1024**2) return (bytes/1024).toFixed(1) + ' KB';
-  if (bytes < 1024**3) return (bytes/1024**2).toFixed(1) + ' MB';
-  return (bytes/1024**3).toFixed(2) + ' GB';
-}
+      function fmtSpeed(bps) {
+        return fmt(bps) + '/s';
+      }
 
-function fmtSpeed(bps) {
-  return fmt(bps) + '/s';
-}
+      function stateBadge(state, paused, prog) {
+        if (paused) return '<span class="badge badge-paused">Paused</span>';
+        if (prog >= 100) return '<span class="badge badge-seeding">Seeding</span>';
+        const s = (state || '').toLowerCase();
+        if (s.includes('check')) return '<span class="badge badge-checking">Checking</span>';
+        if (s.includes('metadata')) return '<span class="badge badge-metadata">Metadata</span>';
+        if (s.includes('downloading') || s.includes('0') || s.includes('1') || s.includes('3')) return '<span class="badge badge-downloading">Downloading</span>';
+        if (s.includes('seeding') || s.includes('5')) return '<span class="badge badge-seeding">Seeding</span>';
+        return `<span class="badge badge-checking">${state}</span>`;
+      }
 
-function stateBadge(state, paused, prog) {
-  if (paused) return '<span class="badge badge-paused">Paused</span>';
-  if (prog >= 100) return '<span class="badge badge-seeding">Seeding</span>';
-  const s = (state||'').toLowerCase();
-  if (s.includes('check')) return '<span class="badge badge-checking">Checking</span>';
-  if (s.includes('metadata')) return '<span class="badge badge-metadata">Metadata</span>';
-  if (s.includes('downloading') || s.includes('0') || s.includes('1') || s.includes('3')) return '<span class="badge badge-downloading">Downloading</span>';
-  if (s.includes('seeding') || s.includes('5')) return '<span class="badge badge-seeding">Seeding</span>';
-  return `<span class="badge badge-checking">${state}</span>`;
-}
+      function renderTorrent(t) {
+        const prog = Math.min(t.progress || 0, 100);
+        const done = prog >= 100;
+        const tid = t.id;
 
-function renderTorrent(t) {
-  const prog = Math.min(t.progress || 0, 100);
-  const done = prog >= 100;
-  const tid = t.id;
-
-  const filesHtml = t.files && t.files.length > 0 ? `
+        const filesHtml = t.files && t.files.length > 0 ? `
     <div class="files-toggle" onclick="toggleFiles('${tid}')">
-      <span>📁</span> ${t.files.length} file${t.files.length>1?'s':''} — click to ${torrents[tid]?.filesOpen ? 'hide' : 'show'}
+      <span>📁</span> ${t.files.length} file${t.files.length > 1 ? 's' : ''} — click to ${torrents[tid]?.filesOpen ? 'hide' : 'show'}
     </div>
     <div class="files-list ${torrents[tid]?.filesOpen ? 'open' : ''}" id="files-${tid}">
       ${t.files.map(f => `
@@ -497,7 +625,7 @@ function renderTorrent(t) {
     </div>
   ` : '';
 
-  return `
+        return `
     <div class="torrent-item" id="item-${tid}">
       <div class="torrent-header">
         <div>
@@ -519,114 +647,122 @@ function renderTorrent(t) {
 
       <div class="torrent-meta">
         <div class="meta-item"><span>Progress</span><span class="val">${prog.toFixed(1)}%</span></div>
-        <div class="meta-item"><span>↓</span><span class="val">${fmtSpeed(t.download_rate||0)}</span></div>
-        <div class="meta-item"><span>↑</span><span class="val">${fmtSpeed(t.upload_rate||0)}</span></div>
-        <div class="meta-item"><span>Peers</span><span class="val">${t.num_peers||0}</span></div>
+        <div class="meta-item"><span>↓</span><span class="val">${fmtSpeed(t.download_rate || 0)}</span></div>
+        <div class="meta-item"><span>↑</span><span class="val">${fmtSpeed(t.upload_rate || 0)}</span></div>
+        <div class="meta-item"><span>Peers</span><span class="val">${t.num_peers || 0}</span></div>
         ${t.total_wanted > 0 ? `<div class="meta-item"><span>Size</span><span class="val">${fmt(t.total_wanted)}</span></div>` : ''}
       </div>
 
       ${filesHtml}
     </div>
   `;
-}
+      }
 
-function escHtml(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
+      function escHtml(s) {
+        return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
 
-function toggleFiles(tid) {
-  if (!torrents[tid]) torrents[tid] = {};
-  torrents[tid].filesOpen = !torrents[tid].filesOpen;
-  refresh();
-}
+      function toggleFiles(tid) {
+        if (!torrents[tid]) torrents[tid] = {};
+        torrents[tid].filesOpen = !torrents[tid].filesOpen;
+        refresh();
+      }
 
-async function addTorrent() {
-  const magnet = document.getElementById('magnetInput').value.trim();
-  if (!magnet) return showStatus('Please paste a magnet link.', 'error');
+      async function addTorrent() {
+        const magnet = document.getElementById('magnetInput').value.trim();
+        if (!magnet) return showStatus('Please paste a magnet link.', 'error');
 
-  const btn = document.getElementById('addBtn');
-  btn.disabled = true; btn.textContent = 'Adding…';
+        const btn = document.getElementById('addBtn');
+        btn.disabled = true; btn.textContent = 'Adding…';
 
-  try {
-    const res = await fetch('/api/add', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({magnet})
-    });
-    const data = await res.json();
-    if (data.error) { showStatus(data.error, 'error'); }
-    else {
-      document.getElementById('magnetInput').value = '';
-      showStatus(`Added: ${data.name}`, 'success');
+        try {
+          const res = await fetch('/api/add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ magnet })
+          });
+          const data = await res.json();
+          if (data.error) { showStatus(data.error, 'error'); }
+          else {
+            document.getElementById('magnetInput').value = '';
+            showStatus(`Added: ${data.name}`, 'success');
+            refresh();
+          }
+        } catch (e) {
+          showStatus('Request failed: ' + e.message, 'error');
+        } finally {
+          btn.disabled = false; btn.textContent = 'Add Torrent';
+        }
+      }
+
+      async function pauseTorrent(tid) {
+        await fetch(`/api/torrent/${tid}/pause`, { method: 'POST' });
+        refresh();
+      }
+
+      async function resumeTorrent(tid) {
+        await fetch(`/api/torrent/${tid}/resume`, { method: 'POST' });
+        refresh();
+      }
+
+      async function removeTorrent(tid) {
+        if (!confirm('Remove this torrent? Downloaded files will remain on the server.')) return;
+        await fetch(`/api/torrent/${tid}/remove`, { method: 'DELETE' });
+        delete torrents[tid];
+        refresh();
+      }
+
+      function showStatus(msg, type) {
+        const el = document.getElementById('statusMsg');
+        el.className = type;
+        el.textContent = msg;
+        setTimeout(() => { el.className = ''; el.style.display = 'none'; }, 4000);
+      }
+
+      let data = [];
+
+      async function refresh() {
+        try {
+          const res = await fetch('/api/torrents');
+          data = await res.json();
+
+          const list = document.getElementById('torrentList');
+          const statsBar = document.getElementById('statsBar');
+
+          if (!data.length) {
+            list.innerHTML = `<div class="empty-state"><div class="icon">📡</div><p>No active torrents. Paste a magnet link above to get started.</p></div>`;
+            statsBar.style.display = 'none';
+            return;
+          }
+
+          statsBar.style.display = 'flex';
+          let totalDown = 0, totalUp = 0;
+          data.forEach(t => { totalDown += t.download_rate || 0; totalUp += t.upload_rate || 0; });
+          document.getElementById('totalDown').textContent = fmtSpeed(totalDown);
+          document.getElementById('totalUp').textContent = fmtSpeed(totalUp);
+          document.getElementById('totalCount').textContent = data.length;
+
+          list.innerHTML = data.map(t => renderTorrent(t)).join('');
+        } catch (e) {
+          console.error('Refresh error:', e);
+        }
+      }
+
+      // Allow Enter key to submit
+      document.getElementById('magnetInput').addEventListener('keydown', e => {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); addTorrent(); }
+      });
+
       refresh();
-    }
-  } catch (e) {
-    showStatus('Request failed: ' + e.message, 'error');
-  } finally {
-    btn.disabled = false; btn.textContent = 'Add Torrent';
-  }
-}
 
-async function pauseTorrent(tid) {
-  await fetch(`/api/torrent/${tid}/pause`, {method:'POST'});
-  refresh();
-}
+      // Smart polling: 4s when active downloads, 30s when idle/no torrents
+      function scheduleRefresh() {
+        const hasActive = data.length > 0 && data.some(t => !t.paused && t.progress < 100);
+        const interval = hasActive ? 4000 : 30000;
+        setTimeout(async () => { await refresh(); scheduleRefresh(); }, interval);
+      }
+      scheduleRefresh();
+    </script>
+  </body>
 
-async function resumeTorrent(tid) {
-  await fetch(`/api/torrent/${tid}/resume`, {method:'POST'});
-  refresh();
-}
-
-async function removeTorrent(tid) {
-  if (!confirm('Remove this torrent? Downloaded files will remain on the server.')) return;
-  await fetch(`/api/torrent/${tid}/remove`, {method:'DELETE'});
-  delete torrents[tid];
-  refresh();
-}
-
-function showStatus(msg, type) {
-  const el = document.getElementById('statusMsg');
-  el.className = type;
-  el.textContent = msg;
-  setTimeout(() => { el.className=''; el.style.display='none'; }, 4000);
-}
-
-let data = [];
-
-async function refresh() {
-  try {
-    const res = await fetch('/api/torrents');
-    data = await res.json();
-
-    const list = document.getElementById('torrentList');
-    const statsBar = document.getElementById('statsBar');
-
-    if (!data.length) {
-      list.innerHTML = `<div class="empty-state"><div class="icon">📡</div><p>No active torrents. Paste a magnet link above to get started.</p></div>`;
-      statsBar.style.display = 'none';
-      return;
-    }
-
-    statsBar.style.display = 'flex';
-    let totalDown = 0, totalUp = 0;
-    data.forEach(t => { totalDown += t.download_rate||0; totalUp += t.upload_rate||0; });
-    document.getElementById('totalDown').textContent = fmtSpeed(totalDown);
-    document.getElementById('totalUp').textContent = fmtSpeed(totalUp);
-    document.getElementById('totalCount').textContent = data.length;
-
-    list.innerHTML = data.map(t => renderTorrent(t)).join('');
-  } catch (e) {
-    console.error('Refresh error:', e);
-  }
-}
-
-// Allow Enter key to submit
-document.getElementById('magnetInput').addEventListener('keydown', e => {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); addTorrent(); }
-});
-
-refresh();
-setInterval(refresh, 3000);
-</script>
-</body>
 </html>
