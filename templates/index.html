@@ -4,7 +4,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Torrent Downloader</title>
+    <title>Torrent Loader</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
       href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap"
@@ -39,21 +39,17 @@
         color: var(--text);
         font-family: var(--font-mono);
         min-height: 100vh;
-        padding: 0;
         overflow-x: hidden;
       }
 
-      /* Grid background */
       body::before {
         content: '';
         position: fixed;
         inset: 0;
-        background-image:
-          linear-gradient(rgba(0, 229, 255, 0.03) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(0, 229, 255, 0.03) 1px, transparent 1px);
-        background-size: 40px 40px;
         pointer-events: none;
         z-index: 0;
+        background-image: linear-gradient(rgba(0, 229, 255, .03) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 229, 255, .03) 1px, transparent 1px);
+        background-size: 40px 40px;
       }
 
       .container {
@@ -64,7 +60,6 @@
         z-index: 1;
       }
 
-      /* Header */
       header {
         margin-bottom: 48px;
       }
@@ -79,21 +74,21 @@
       .logo-icon {
         width: 44px;
         height: 44px;
-        background: linear-gradient(135deg, var(--accent2), var(--accent));
         border-radius: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 22px;
         flex-shrink: 0;
-        box-shadow: 0 0 24px rgba(0, 229, 255, 0.3);
+        background: linear-gradient(135deg, var(--accent2), var(--accent));
+        box-shadow: 0 0 24px rgba(0, 229, 255, .3);
       }
 
       h1 {
         font-family: var(--font-display);
         font-size: clamp(1.6rem, 4vw, 2.4rem);
         font-weight: 800;
-        letter-spacing: -0.5px;
+        letter-spacing: -.5px;
         background: linear-gradient(135deg, #fff 40%, var(--accent));
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
@@ -102,12 +97,11 @@
 
       .subtitle {
         color: var(--muted);
-        font-size: 0.78rem;
-        letter-spacing: 0.08em;
+        font-size: .78rem;
+        letter-spacing: .08em;
         text-transform: uppercase;
       }
 
-      /* Card */
       .card {
         background: var(--surface);
         border: 1px solid var(--border);
@@ -125,21 +119,20 @@
         left: 0;
         right: 0;
         height: 1px;
+        opacity: .5;
         background: linear-gradient(90deg, transparent, var(--accent), transparent);
-        opacity: 0.5;
       }
 
       .card-title {
         font-family: var(--font-display);
-        font-size: 0.7rem;
+        font-size: .7rem;
         font-weight: 700;
-        letter-spacing: 0.15em;
+        letter-spacing: .15em;
         text-transform: uppercase;
         color: var(--accent);
         margin-bottom: 18px;
       }
 
-      /* Input area */
       .input-group {
         display: flex;
         gap: 12px;
@@ -154,11 +147,11 @@
         border-radius: 8px;
         color: var(--text);
         font-family: var(--font-mono);
-        font-size: 0.78rem;
+        font-size: .78rem;
         padding: 14px 16px;
         resize: vertical;
         min-height: 80px;
-        transition: border-color 0.2s;
+        transition: border-color .2s;
         outline: none;
       }
 
@@ -168,7 +161,7 @@
 
       textarea:focus {
         border-color: var(--accent);
-        box-shadow: 0 0 0 2px rgba(0, 229, 255, 0.1);
+        box-shadow: 0 0 0 2px rgba(0, 229, 255, .1);
       }
 
       .btn {
@@ -179,17 +172,17 @@
         padding: 14px 24px;
         font-family: var(--font-display);
         font-weight: 700;
-        font-size: 0.85rem;
+        font-size: .85rem;
         cursor: pointer;
-        transition: all 0.2s;
+        transition: all .2s;
         white-space: nowrap;
         align-self: flex-end;
-        letter-spacing: 0.03em;
+        letter-spacing: .03em;
       }
 
       .btn:hover {
         transform: translateY(-1px);
-        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.5);
+        box-shadow: 0 4px 20px rgba(124, 58, 237, .5);
       }
 
       .btn:active {
@@ -197,14 +190,14 @@
       }
 
       .btn:disabled {
-        opacity: 0.5;
+        opacity: .5;
         cursor: not-allowed;
         transform: none;
       }
 
       .btn-sm {
         padding: 6px 12px;
-        font-size: 0.7rem;
+        font-size: .7rem;
         border-radius: 6px;
       }
 
@@ -224,9 +217,8 @@
         box-shadow: none;
       }
 
-      /* Status message */
       #statusMsg {
-        font-size: 0.78rem;
+        font-size: .78rem;
         padding: 10px 14px;
         border-radius: 6px;
         margin-top: 14px;
@@ -234,28 +226,27 @@
       }
 
       #statusMsg.success {
-        background: rgba(0, 255, 135, 0.1);
-        border: 1px solid rgba(0, 255, 135, 0.3);
+        background: rgba(0, 255, 135, .1);
+        border: 1px solid rgba(0, 255, 135, .3);
         color: var(--green);
         display: block;
       }
 
       #statusMsg.error {
-        background: rgba(255, 64, 96, 0.1);
-        border: 1px solid rgba(255, 64, 96, 0.3);
+        background: rgba(255, 64, 96, .1);
+        border: 1px solid rgba(255, 64, 96, .3);
         color: var(--red);
         display: block;
       }
 
-      /* Torrent list */
       .torrent-item {
         background: var(--surface2);
         border: 1px solid var(--border);
         border-radius: 10px;
         padding: 18px 20px;
         margin-bottom: 14px;
-        transition: border-color 0.2s;
-        animation: slideIn 0.3s ease;
+        transition: border-color .2s;
+        animation: slideIn .3s ease;
       }
 
       @keyframes slideIn {
@@ -271,7 +262,7 @@
       }
 
       .torrent-item:hover {
-        border-color: rgba(0, 229, 255, 0.3);
+        border-color: rgba(0, 229, 255, .3);
       }
 
       .torrent-header {
@@ -286,7 +277,7 @@
       .torrent-name {
         font-family: var(--font-display);
         font-weight: 700;
-        font-size: 0.92rem;
+        font-size: .92rem;
         color: var(--text);
         word-break: break-word;
         flex: 1;
@@ -298,7 +289,6 @@
         flex-shrink: 0;
       }
 
-      /* Progress bar */
       .progress-wrap {
         background: var(--surface);
         border-radius: 4px;
@@ -326,16 +316,15 @@
         top: 0;
         bottom: 0;
         width: 20px;
-        background: rgba(255, 255, 255, 0.3);
+        background: rgba(255, 255, 255, .3);
         filter: blur(4px);
       }
 
-      /* Meta row */
       .torrent-meta {
         display: flex;
         gap: 20px;
         flex-wrap: wrap;
-        font-size: 0.72rem;
+        font-size: .72rem;
         color: var(--muted);
       }
 
@@ -345,67 +334,60 @@
         gap: 5px;
       }
 
-      .meta-item span:first-child {
-        color: var(--muted);
-      }
-
       .meta-item .val {
         color: var(--text);
         font-weight: 700;
       }
 
-      /* State badge */
       .badge {
         display: inline-block;
         padding: 2px 8px;
         border-radius: 20px;
-        font-size: 0.65rem;
+        font-size: .65rem;
         font-weight: 700;
-        letter-spacing: 0.05em;
+        letter-spacing: .05em;
         text-transform: uppercase;
       }
 
-      .badge-downloading {
-        background: rgba(0, 229, 255, 0.12);
+      .badge-dl {
+        background: rgba(0, 229, 255, .12);
         color: var(--accent);
-        border: 1px solid rgba(0, 229, 255, 0.3);
+        border: 1px solid rgba(0, 229, 255, .3);
       }
 
-      .badge-seeding {
-        background: rgba(0, 255, 135, 0.12);
+      .badge-seed {
+        background: rgba(0, 255, 135, .12);
         color: var(--green);
-        border: 1px solid rgba(0, 255, 135, 0.3);
+        border: 1px solid rgba(0, 255, 135, .3);
       }
 
-      .badge-paused {
-        background: rgba(255, 215, 0, 0.12);
+      .badge-pause {
+        background: rgba(255, 215, 0, .12);
         color: var(--yellow);
-        border: 1px solid rgba(255, 215, 0, 0.3);
+        border: 1px solid rgba(255, 215, 0, .3);
       }
 
-      .badge-checking,
-      .badge-metadata {
-        background: rgba(124, 58, 237, 0.12);
+      .badge-meta {
+        background: rgba(124, 58, 237, .12);
         color: #a78bfa;
-        border: 1px solid rgba(124, 58, 237, 0.3);
+        border: 1px solid rgba(124, 58, 237, .3);
       }
 
-      .badge-error {
-        background: rgba(255, 64, 96, 0.12);
+      .badge-err {
+        background: rgba(255, 64, 96, .12);
         color: var(--red);
-        border: 1px solid rgba(255, 64, 96, 0.3);
+        border: 1px solid rgba(255, 64, 96, .3);
       }
 
-      /* Files section */
       .files-toggle {
-        font-size: 0.7rem;
+        font-size: .7rem;
         color: var(--muted);
         cursor: pointer;
         margin-top: 10px;
         display: inline-flex;
         align-items: center;
         gap: 5px;
-        transition: color 0.2s;
+        transition: color .2s;
       }
 
       .files-toggle:hover {
@@ -430,7 +412,7 @@
         background: var(--surface);
         border-radius: 6px;
         padding: 8px 12px;
-        font-size: 0.72rem;
+        font-size: .72rem;
         gap: 10px;
         flex-wrap: wrap;
       }
@@ -438,15 +420,15 @@
       .file-entry a {
         color: var(--accent);
         text-decoration: none;
-        font-size: 0.68rem;
-        border: 1px solid rgba(0, 229, 255, 0.3);
+        font-size: .68rem;
+        border: 1px solid rgba(0, 229, 255, .3);
         padding: 3px 8px;
         border-radius: 4px;
-        transition: all 0.2s;
+        transition: all .2s;
       }
 
       .file-entry a:hover {
-        background: rgba(0, 229, 255, 0.1);
+        background: rgba(0, 229, 255, .1);
       }
 
       .file-name {
@@ -460,7 +442,6 @@
         flex-shrink: 0;
       }
 
-      /* Empty state */
       .empty-state {
         text-align: center;
         padding: 48px 24px;
@@ -470,14 +451,13 @@
       .empty-state .icon {
         font-size: 3rem;
         margin-bottom: 14px;
-        opacity: 0.4;
+        opacity: .4;
       }
 
       .empty-state p {
-        font-size: 0.82rem;
+        font-size: .82rem;
       }
 
-      /* Stats bar */
       .stats-bar {
         display: flex;
         gap: 24px;
@@ -488,7 +468,7 @@
       }
 
       .stat {
-        font-size: 0.72rem;
+        font-size: .72rem;
       }
 
       .stat-label {
@@ -500,13 +480,12 @@
         font-weight: 700;
       }
 
-      /* Footer */
       footer {
         text-align: center;
         color: var(--muted);
-        font-size: 0.68rem;
+        font-size: .68rem;
         margin-top: 48px;
-        letter-spacing: 0.08em;
+        letter-spacing: .08em;
       }
 
       footer a {
@@ -514,7 +493,6 @@
         text-decoration: none;
       }
 
-      /* Scrollbar */
       ::-webkit-scrollbar {
         width: 6px;
       }
@@ -543,7 +521,6 @@
         </div>
       </header>
 
-      <!-- Add torrent card -->
       <div class="card">
         <div class="card-title">▸ Add Magnet Link</div>
         <div class="input-group">
@@ -553,10 +530,8 @@
         <div id="statusMsg"></div>
       </div>
 
-      <!-- Torrents card -->
       <div class="card">
         <div class="card-title">▸ Active Downloads</div>
-
         <div class="stats-bar" id="statsBar" style="display:none">
           <div class="stat"><span class="stat-label">Total ↓ </span><span class="stat-val" id="totalDown">0 B/s</span>
           </div>
@@ -565,7 +540,6 @@
           <div class="stat"><span class="stat-label">Torrents </span><span class="stat-val" id="totalCount">0</span>
           </div>
         </div>
-
         <div id="torrentList">
           <div class="empty-state">
             <div class="icon">📡</div>
@@ -574,198 +548,154 @@
         </div>
       </div>
 
-      <footer>
-        Torrent Loader · Personal Use Only ·
-        <a href="https://github.com/arvidn/libtorrent" target="_blank">Powered by libtorrent</a>
-      </footer>
+      <footer>Torrent Loader · Personal Use Only · <a href="https://github.com/arvidn/libtorrent"
+          target="_blank">Powered by libtorrent</a></footer>
     </div>
 
     <script>
-      const torrents = {};
+      var uiState = {};  // tid -> { filesOpen }
+      var data = [];
 
-      function fmt(bytes) {
-        if (bytes < 1024) return bytes + ' B';
-        if (bytes < 1024 ** 2) return (bytes / 1024).toFixed(1) + ' KB';
-        if (bytes < 1024 ** 3) return (bytes / 1024 ** 2).toFixed(1) + ' MB';
-        return (bytes / 1024 ** 3).toFixed(2) + ' GB';
+      function fmt(b) {
+        if (b < 1024) return b + ' B';
+        if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
+        if (b < 1073741824) return (b / 1048576).toFixed(1) + ' MB';
+        return (b / 1073741824).toFixed(2) + ' GB';
+      }
+      function fmtSpeed(b) { return fmt(b) + '/s'; }
+
+      function badge(state, paused, prog) {
+        if (paused) return '<span class="badge badge-pause">Paused</span>';
+        var s = (state || '').toLowerCase();
+        if (s === 'adding') return '<span class="badge badge-meta">Adding…</span>';
+        if (prog >= 100) return '<span class="badge badge-seed">Seeding ✓</span>';
+        if (s.indexOf('check') >= 0) return '<span class="badge badge-meta">Checking</span>';
+        if (s.indexOf('metadata') >= 0 || s === 'downloading_metadata') return '<span class="badge badge-meta">Fetching Metadata</span>';
+        if (s === 'downloading' || s.indexOf('download') >= 0) return '<span class="badge badge-dl">Downloading</span>';
+        if (s === 'seeding' || s.indexOf('seed') >= 0) return '<span class="badge badge-seed">Seeding ✓</span>';
+        if (s.indexOf('error') >= 0) return '<span class="badge badge-err">Error</span>';
+        return '<span class="badge badge-meta">' + esc(state) + '</span>';
       }
 
-      function fmtSpeed(bps) {
-        return fmt(bps) + '/s';
+      function esc(s) {
+        return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
       }
 
-      function stateBadge(state, paused, prog) {
-        if (paused) return '<span class="badge badge-paused">Paused</span>';
-        const s = (state || '').toLowerCase();
-        if (s === 'adding') return '<span class="badge badge-metadata">Adding…</span>';
-        if (prog >= 100) return '<span class="badge badge-seeding">Seeding ✓</span>';
-        if (s.includes('check')) return '<span class="badge badge-checking">Checking</span>';
-        if (s.includes('metadata') || s.includes('downloading_metadata')) return '<span class="badge badge-metadata">Fetching Metadata</span>';
-        if (s === 'downloading' || s.includes('downloading')) return '<span class="badge badge-downloading">Downloading</span>';
-        if (s === 'seeding' || s.includes('seeding')) return '<span class="badge badge-seeding">Seeding ✓</span>';
-        if (s.includes('error')) return `<span class="badge badge-error">Error</span>`;
-        return `<span class="badge badge-checking">${state}</span>`;
-      }</span > `;
-}
+      function renderTorrent(t) {
+        var prog = Math.min(t.progress || 0, 100);
+        var done = prog >= 100;
+        var tid = t.id;
+        var open = uiState[tid] && uiState[tid].filesOpen;
 
-function renderTorrent(t) {
-  const prog = Math.min(t.progress || 0, 100);
-  const done = prog >= 100;
-  const tid = t.id;
-
-  const filesHtml = t.files && t.files.length > 0 ? `
-        < div class="files-toggle" onclick = "toggleFiles('${tid}')" >
-          <span>📁</span> ${ t.files.length } file${ t.files.length > 1 ? 's' : '' } — click to ${ torrents[tid]?.filesOpen ? 'hide' : 'show' }
-    </div >
-        <div class="files-list ${torrents[tid]?.filesOpen ? 'open' : ''}" id="files-${tid}">
-          ${t.files.map(f => `
-        <div class="file-entry">
-          <span class="file-name">${f.path}</span>
-          <span class="file-size">${fmt(f.size)}</span>
-          ${done ? `<a href="/api/download/${tid}/${encodeURIComponent(f.path)}">↓ Download</a>` : ''}
-        </div>
-      `).join('')}
-        </div>
-      ` : '';
-
-  return `
-        < div class="torrent-item" id = "item-${tid}" >
-      <div class="torrent-header">
-        <div>
-          <div class="torrent-name">${escHtml(t.name || 'Fetching metadata…')}</div>
-          <div style="margin-top:5px">${stateBadge(t.state, t.paused, prog)}</div>
-        </div>
-        <div class="torrent-actions">
-          ${t.paused
-            ? `<button class="btn btn-sm btn-ghost" onclick="resumeTorrent('${tid}')">▶ Resume</button>`
-            : `<button class="btn btn-sm btn-ghost" onclick="pauseTorrent('${tid}')">⏸ Pause</button>`
+        var filesHtml = '';
+        if (t.files && t.files.length > 0) {
+          var label = open ? 'hide' : 'show';
+          var fileRows = '';
+          for (var i = 0; i < t.files.length; i++) {
+            var f = t.files[i];
+            var dl = done ? '<a href="/api/download/' + tid + '/' + encodeURIComponent(f.path) + '">↓ Download</a>' : '';
+            fileRows += '<div class="file-entry"><span class="file-name">' + esc(f.path) + '</span><span class="file-size">' + fmt(f.size) + '</span>' + dl + '</div>';
           }
-          <button class="btn btn-sm btn-danger" onclick="removeTorrent('${tid}')">✕</button>
-        </div>
-      </div>
+          filesHtml = '<div class="files-toggle" onclick="toggleFiles(\'' + tid + '\')">📁 ' + t.files.length + ' file' + (t.files.length > 1 ? 's' : '') + ' — click to ' + label + '</div>'
+            + '<div class="files-list' + (open ? ' open' : '') + '" id="files-' + tid + '">' + fileRows + '</div>';
+        }
 
-      <div class="progress-wrap">
-        <div class="progress-bar ${done ? 'done' : ''}" style="width:${prog}%"></div>
-      </div>
+        var pauseBtn = t.paused
+          ? '<button class="btn btn-sm btn-ghost" onclick="resumeTorrent(\'' + tid + '\')">▶ Resume</button>'
+          : '<button class="btn btn-sm btn-ghost" onclick="pauseTorrent(\'' + tid + '\')">⏸ Pause</button>';
 
-      <div class="torrent-meta">
-        <div class="meta-item"><span>Progress</span><span class="val">${prog.toFixed(1)}%</span></div>
-        <div class="meta-item"><span>↓</span><span class="val">${fmtSpeed(t.download_rate||0)}</span></div>
-        <div class="meta-item"><span>↑</span><span class="val">${fmtSpeed(t.upload_rate||0)}</span></div>
-        <div class="meta-item"><span>Peers</span><span class="val">${t.num_peers||0}</span></div>
-        ${t.total_wanted > 0 ? `<div class="meta-item"><span>Size</span><span class="val">${fmt(t.total_wanted)}</span></div>` : ''}
-      </div>
+        var sizeHtml = t.total_wanted > 0 ? '<div class="meta-item"><span>Size</span><span class="val">' + fmt(t.total_wanted) + '</span></div>' : '';
 
-      ${ filesHtml }
-    </div >
-        `;
-}
-
-function escHtml(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-function toggleFiles(tid) {
-  if (!torrents[tid]) torrents[tid] = {};
-  torrents[tid].filesOpen = !torrents[tid].filesOpen;
-  refresh();
-}
-
-async function addTorrent() {
-  const magnet = document.getElementById('magnetInput').value.trim();
-  if (!magnet) return showStatus('Please paste a magnet link.', 'error');
-
-  const btn = document.getElementById('addBtn');
-  btn.disabled = true; btn.textContent = 'Adding…';
-
-  try {
-    const res = await fetch('/api/add', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({magnet})
-    });
-    const data = await res.json();
-    if (data.error) { showStatus(data.error, 'error'); }
-    else {
-      document.getElementById('magnetInput').value = '';
-      showStatus(`Added: ${ data.name } `, 'success');
-      refresh();
-    }
-  } catch (e) {
-    showStatus('Request failed: ' + e.message, 'error');
-  } finally {
-    btn.disabled = false; btn.textContent = 'Add Torrent';
-  }
-}
-
-async function pauseTorrent(tid) {
-  await fetch(`/ api / torrent / ${ tid }/pause`, {method:'POST'});
-      refresh();
-}
-
-      async function resumeTorrent(tid) {
-        await fetch(`/api/torrent/${tid}/resume`, { method: 'POST' });
-        refresh();
+        return '<div class="torrent-item" id="item-' + tid + '">'
+          + '<div class="torrent-header"><div>'
+          + '<div class="torrent-name">' + esc(t.name || 'Fetching metadata…') + '</div>'
+          + '<div style="margin-top:5px">' + badge(t.state, t.paused, prog) + '</div>'
+          + '</div><div class="torrent-actions">' + pauseBtn
+          + '<button class="btn btn-sm btn-danger" onclick="removeTorrent(\'' + tid + '\')">✕</button>'
+          + '</div></div>'
+          + '<div class="progress-wrap"><div class="progress-bar' + (done ? ' done' : '') + '" style="width:' + prog + '%"></div></div>'
+          + '<div class="torrent-meta">'
+          + '<div class="meta-item"><span>Progress</span><span class="val">' + prog.toFixed(1) + '%</span></div>'
+          + '<div class="meta-item"><span>↓</span><span class="val">' + fmtSpeed(t.download_rate || 0) + '</span></div>'
+          + '<div class="meta-item"><span>↑</span><span class="val">' + fmtSpeed(t.upload_rate || 0) + '</span></div>'
+          + '<div class="meta-item"><span>Peers</span><span class="val">' + (t.num_peers || 0) + '</span></div>'
+          + sizeHtml + '</div>' + filesHtml + '</div>';
       }
 
-      async function removeTorrent(tid) {
-        if (!confirm('Remove this torrent? Downloaded files will remain on the server.')) return;
-        await fetch(`/api/torrent/${tid}/remove`, { method: 'DELETE' });
-        delete torrents[tid];
-        refresh();
+      function toggleFiles(tid) {
+        if (!uiState[tid]) uiState[tid] = {};
+        uiState[tid].filesOpen = !uiState[tid].filesOpen;
+        renderAll();
+      }
+
+      function renderAll() {
+        var list = document.getElementById('torrentList');
+        var statsBar = document.getElementById('statsBar');
+        if (!data.length) {
+          list.innerHTML = '<div class="empty-state"><div class="icon">📡</div><p>No active torrents. Paste a magnet link above to get started.</p></div>';
+          statsBar.style.display = 'none';
+          return;
+        }
+        statsBar.style.display = 'flex';
+        var totalDown = 0, totalUp = 0;
+        for (var i = 0; i < data.length; i++) { totalDown += data[i].download_rate || 0; totalUp += data[i].upload_rate || 0; }
+        document.getElementById('totalDown').textContent = fmtSpeed(totalDown);
+        document.getElementById('totalUp').textContent = fmtSpeed(totalUp);
+        document.getElementById('totalCount').textContent = data.length;
+        list.innerHTML = data.map(renderTorrent).join('');
       }
 
       function showStatus(msg, type) {
-        const el = document.getElementById('statusMsg');
+        var el = document.getElementById('statusMsg');
         el.className = type;
         el.textContent = msg;
-        setTimeout(() => { el.className = ''; el.style.display = 'none'; }, 4000);
+        setTimeout(function () { el.className = ''; el.style.display = 'none'; }, 4000);
       }
 
-      let data = [];
-
-      async function refresh() {
-        try {
-          const res = await fetch('/api/torrents');
-          data = await res.json();
-
-          const list = document.getElementById('torrentList');
-          const statsBar = document.getElementById('statsBar');
-
-          if (!data.length) {
-            list.innerHTML = `<div class="empty-state"><div class="icon">📡</div><p>No active torrents. Paste a magnet link above to get started.</p></div>`;
-            statsBar.style.display = 'none';
-            return;
-          }
-
-          statsBar.style.display = 'flex';
-          let totalDown = 0, totalUp = 0;
-          data.forEach(t => { totalDown += t.download_rate || 0; totalUp += t.upload_rate || 0; });
-          document.getElementById('totalDown').textContent = fmtSpeed(totalDown);
-          document.getElementById('totalUp').textContent = fmtSpeed(totalUp);
-          document.getElementById('totalCount').textContent = data.length;
-
-          list.innerHTML = data.map(t => renderTorrent(t)).join('');
-        } catch (e) {
-          console.error('Refresh error:', e);
-        }
+      function addTorrent() {
+        var magnet = document.getElementById('magnetInput').value.trim();
+        if (!magnet) { showStatus('Please paste a magnet link.', 'error'); return; }
+        var btn = document.getElementById('addBtn');
+        btn.disabled = true; btn.textContent = 'Adding…';
+        fetch('/api/add', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ magnet: magnet }) })
+          .then(function (r) { return r.json(); })
+          .then(function (d) {
+            if (d.error) { showStatus(d.error, 'error'); }
+            else { document.getElementById('magnetInput').value = ''; showStatus('Added: ' + d.name, 'success'); refresh(); }
+          })
+          .catch(function (e) { showStatus('Request failed: ' + e.message, 'error'); })
+          .finally(function () { btn.disabled = false; btn.textContent = 'Add Torrent'; });
       }
 
-      // Allow Enter key to submit
-      document.getElementById('magnetInput').addEventListener('keydown', e => {
+      function pauseTorrent(tid) {
+        fetch('/api/torrent/' + tid + '/pause', { method: 'POST' }).then(refresh);
+      }
+      function resumeTorrent(tid) {
+        fetch('/api/torrent/' + tid + '/resume', { method: 'POST' }).then(refresh);
+      }
+      function removeTorrent(tid) {
+        if (!confirm('Remove this torrent? Downloaded files will remain on the server.')) return;
+        fetch('/api/torrent/' + tid + '/remove', { method: 'DELETE' }).then(function () { delete uiState[tid]; refresh(); });
+      }
+
+      function refresh() {
+        return fetch('/api/torrents')
+          .then(function (r) { return r.json(); })
+          .then(function (d) { data = d; renderAll(); })
+          .catch(function (e) { console.error('Refresh error:', e); });
+      }
+
+      document.getElementById('magnetInput').addEventListener('keydown', function (e) {
         if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); addTorrent(); }
       });
 
-      refresh();
-
-      // Smart polling: 3s when torrents exist, 20s when truly empty
+      // Smart polling: 3s when torrents exist, 20s when empty
       function scheduleRefresh() {
-        const interval = data.length > 0 ? 3000 : 20000;
-        setTimeout(async () => { await refresh(); scheduleRefresh(); }, interval);
+        var interval = data.length > 0 ? 3000 : 20000;
+        setTimeout(function () { refresh().then(scheduleRefresh); }, interval);
       }
-      scheduleRefresh(); }, interval);
-}
-      scheduleRefresh();
+
+      refresh().then(scheduleRefresh);
     </script>
   </body>
 
