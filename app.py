@@ -2,13 +2,13 @@ import os
 import threading
 import time
 import urllib.parse
+import traceback
 from flask import Flask, render_template, request, jsonify, send_file, abort
 import libtorrent as lt
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "change-this-secret-key-in-production")
 
-# ── Config ────────────────────────────────────────────────────────────────────
 DOWNLOAD_DIR = os.environ.get("DOWNLOAD_DIR", "./downloads")
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
@@ -17,20 +17,21 @@ _session = None
 _session_lock = threading.Lock()
 
 
-# ── libtorrent session ────────────────────────────────────────────────────────
 def get_session():
     global _session
     with _session_lock:
         if _session is None:
-            sp = lt.settings_pack()
-            sp["listen_interfaces"] = "0.0.0.0:6881"
-            sp["alert_mask"] = lt.alert.category_t.all_categories
-            sp["dht_bootstrap_nodes"] = (
-                "router.bittorrent.com:6881,"
-                "router.utorrent.com:6881,"
-                "dht.transmissionbt.com:6881"
-            )
-            _session = lt.session(sp)
+            # libtorrent 2.x: apply_settings() takes a plain dict
+            _session = lt.session()
+            _session.apply_settings({
+                "listen_interfaces": "0.0.0.0:6881",
+                "alert_mask": lt.alert.category_t.all_categories,
+                "dht_bootstrap_nodes": (
+                    "router.bittorrent.com:6881,"
+                    "router.utorrent.com:6881,"
+                    "dht.transmissionbt.com:6881"
+                ),
+            })
             _session.start_dht()
             _session.start_lsd()
             _session.start_upnp()
@@ -45,11 +46,9 @@ def torrent_worker():
         time.sleep(0.2)
 
 
-worker_thread = threading.Thread(target=torrent_worker, daemon=True)
-worker_thread.start()
+threading.Thread(target=torrent_worker, daemon=True).start()
 
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
 def handle_id(handle):
     try:
         return str(handle.info_hash())
@@ -107,7 +106,6 @@ def status_dict(tid, handle):
         }
 
 
-# ── Routes ────────────────────────────────────────────────────────────────────
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -124,6 +122,7 @@ def add_torrent():
 
     try:
         ses = get_session()
+
         params = lt.parse_magnet_uri(magnet)
         params.save_path = DOWNLOAD_DIR
         params.flags |= lt.torrent_flags.sequential_download
@@ -140,7 +139,7 @@ def add_torrent():
         return jsonify({"id": tid, "name": dn})
 
     except Exception as e:
-        return jsonify({"error": f"Failed to add torrent: {str(e)}"}), 500
+        return jsonify({"error": str(e), "trace": traceback.format_exc()}), 500
 
 
 @app.route("/api/torrents")
@@ -189,6 +188,22 @@ def download_file(tid, filepath):
     if not os.path.exists(safe_path):
         abort(404)
     return send_file(safe_path, as_attachment=True)
+
+
+# ── Debug endpoint — shows real errors ───────────────────────────────────────
+@app.route("/api/debug")
+def debug():
+    try:
+        ses = get_session()
+        return jsonify({
+            "lt_version": lt.version,
+            "session_ok": ses is not None,
+            "download_dir": DOWNLOAD_DIR,
+            "download_dir_exists": os.path.exists(DOWNLOAD_DIR),
+            "torrent_count": len(torrents),
+        })
+    except Exception as e:
+        return jsonify({"error": str(e), "trace": traceback.format_exc()}), 500
 
 
 if __name__ == "__main__":
