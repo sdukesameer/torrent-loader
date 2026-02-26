@@ -2,5 +2,5 @@
 # Build script for Render.com
 set -e
 
-# python-libtorrent has prebuilt wheels for Python 3.11 on Linux x86_64
-pip install python-libtorrent flask gunicorn
+# 'libtorrent' on PyPI has a prebuilt cp312 manylinux wheel — matches Python 3.12
+pip install libtorrent==2.0.11 flask gunicorn
