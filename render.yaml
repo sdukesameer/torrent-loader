@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: torrent-loader
+    runtime: python
+    buildCommand: bash build.sh
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 120
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DOWNLOAD_DIR
+        value: /tmp/downloads
+    disk:
+      name: downloads
+      mountPath: /downloads
+      sizeGB: 10
